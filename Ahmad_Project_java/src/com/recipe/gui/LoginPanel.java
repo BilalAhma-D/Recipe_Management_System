@@ -162,21 +162,42 @@ public class LoginPanel extends JPanel {
         subLabel.setAlignmentX(CENTER_ALIGNMENT);
         subLabel.setBorder(new EmptyBorder(4, 0, 28, 0));
 
-        // ---- Username section ----
+        // ---- Username section (grouped so label sits above field) ----
+        JPanel userGroup = new JPanel();
+        userGroup.setLayout(new BoxLayout(userGroup, BoxLayout.Y_AXIS));
+        userGroup.setBackground(CARD_BG);
+        userGroup.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel userLabel = makeLabel("Username", 12, Font.BOLD, TEXT_MUTED);
-        userLabel.setAlignmentX(LEFT_ALIGNMENT);
+        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         usernameField = makeTextField("Enter your username");
-        usernameField.setAlignmentX(LEFT_ALIGNMENT);
+        // keep login inputs narrower so they appear centered inside the card
+        usernameField.setMaximumSize(new Dimension(300, 44));
+        usernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // ---- Password section ----
+        userGroup.add(userLabel);
+        userGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        userGroup.add(usernameField);
+
+        // ---- Password section (grouped similarly) ----
+        JPanel passGroup = new JPanel();
+        passGroup.setLayout(new BoxLayout(passGroup, BoxLayout.Y_AXIS));
+        passGroup.setBackground(CARD_BG);
+        passGroup.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel passLabel = makeLabel("Password", 12, Font.BOLD, TEXT_MUTED);
-        passLabel.setAlignmentX(LEFT_ALIGNMENT);
+        passLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         passLabel.setBorder(new EmptyBorder(14, 0, 0, 0));
 
         passwordField = new JPasswordField();
         styleTextField(passwordField);
-        passwordField.setAlignmentX(LEFT_ALIGNMENT);
+        passwordField.setMaximumSize(new Dimension(300, 44));
+        passwordField.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        passGroup.add(passLabel);
+        passGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        passGroup.add(passwordField);
 
         // ---- Error message (hidden by default) ----
         errorLabel = makeLabel("", 12, Font.PLAIN, ERROR_RED);
@@ -223,12 +244,8 @@ public class LoginPanel extends JPanel {
         card.add(iconLabel);
         card.add(titleLabel);
         card.add(subLabel);
-        card.add(userLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6))); // small gap
-        card.add(usernameField);
-        card.add(passLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(passwordField);
+        card.add(userGroup);
+        card.add(passGroup);
         card.add(errorLabel);
         card.add(Box.createRigidArea(new Dimension(0, 20)));
         card.add(loginButton);

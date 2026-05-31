@@ -141,7 +141,7 @@ public class RegisterPanel extends JPanel {
         card.setBorder(new EmptyBorder(40, 50, 40, 50));
         card.setPreferredSize(new Dimension(440, 640));
 
-        // ---- Header ----
+        // Header
         JLabel iconLabel = new JLabel("✨", SwingConstants.CENTER);
         iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
         iconLabel.setAlignmentX(CENTER_ALIGNMENT);
@@ -153,100 +153,123 @@ public class RegisterPanel extends JPanel {
         subLabel.setAlignmentX(CENTER_ALIGNMENT);
         subLabel.setBorder(new EmptyBorder(4, 0, 24, 0));
 
-        // ---- Username ----
+        // Username group
+        JPanel userGroup = new JPanel();
+        userGroup.setLayout(new BoxLayout(userGroup, BoxLayout.Y_AXIS));
+        userGroup.setBackground(CARD_BG);
+        userGroup.setAlignmentX(CENTER_ALIGNMENT);
+
         JLabel userLabel = makeLabel("Username", 11, Font.BOLD, TEXT_MUTED);
         userLabel.setAlignmentX(LEFT_ALIGNMENT);
         usernameField = makeTextField("Choose a username");
+        usernameField.setMaximumSize(new Dimension(320, 44));
         usernameField.setAlignmentX(LEFT_ALIGNMENT);
 
-        // ---- Email ----
+        userGroup.add(userLabel);
+        userGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        userGroup.add(usernameField);
+
+        // Email group
+        JPanel emailGroup = new JPanel();
+        emailGroup.setLayout(new BoxLayout(emailGroup, BoxLayout.Y_AXIS));
+        emailGroup.setBackground(CARD_BG);
+        emailGroup.setAlignmentX(CENTER_ALIGNMENT);
+
         JLabel emailLabel = makeLabel("Email", 11, Font.BOLD, TEXT_MUTED);
         emailLabel.setAlignmentX(LEFT_ALIGNMENT);
-        emailLabel.setBorder(new EmptyBorder(12, 0, 0, 0));
         emailField = makeTextField("Enter your email");
+        emailField.setMaximumSize(new Dimension(320, 44));
         emailField.setAlignmentX(LEFT_ALIGNMENT);
 
-        // ---- Password + Strength Bar ----
+        emailGroup.add(emailLabel);
+        emailGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        emailGroup.add(emailField);
+
+        // Password group
+        JPanel passGroup = new JPanel();
+        passGroup.setLayout(new BoxLayout(passGroup, BoxLayout.Y_AXIS));
+        passGroup.setBackground(CARD_BG);
+        passGroup.setAlignmentX(CENTER_ALIGNMENT);
+
         JLabel passLabel = makeLabel("Password", 11, Font.BOLD, TEXT_MUTED);
         passLabel.setAlignmentX(LEFT_ALIGNMENT);
         passLabel.setBorder(new EmptyBorder(12, 0, 0, 0));
 
         passwordField = new JPasswordField();
         styleTextField(passwordField);
+        passwordField.setMaximumSize(new Dimension(320, 44));
         passwordField.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Strength bar — updates live as user types
         strengthBar = new JProgressBar(0, 4);
         strengthBar.setValue(0);
         strengthBar.setStringPainted(false);
-        strengthBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 6));
+        strengthBar.setMaximumSize(new Dimension(320, 6));
         strengthBar.setBackground(FIELD_BG);
         strengthBar.setForeground(STRENGTH_WEAK);
         strengthBar.setBorderPainted(false);
         strengthBar.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Label next to bar — "Weak", "Fair", "Good", "Strong"
         strengthLabel = makeLabel("", 10, Font.PLAIN, TEXT_MUTED);
         strengthLabel.setAlignmentX(LEFT_ALIGNMENT);
 
-        // Attach the listener that updates the bar on every keystroke
         passwordField.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e)  { updateStrengthBar(); }
             @Override public void removeUpdate(DocumentEvent e)  { updateStrengthBar(); }
             @Override public void changedUpdate(DocumentEvent e) { updateStrengthBar(); }
         });
 
-        // ---- Confirm Password ----
+        passGroup.add(passLabel);
+        passGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        passGroup.add(passwordField);
+        passGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        passGroup.add(strengthBar);
+        passGroup.add(strengthLabel);
+
+        // Confirm password group
+        JPanel confirmGroup = new JPanel();
+        confirmGroup.setLayout(new BoxLayout(confirmGroup, BoxLayout.Y_AXIS));
+        confirmGroup.setBackground(CARD_BG);
+        confirmGroup.setAlignmentX(CENTER_ALIGNMENT);
+
         JLabel confirmLabel = makeLabel("Confirm Password", 11, Font.BOLD, TEXT_MUTED);
         confirmLabel.setAlignmentX(LEFT_ALIGNMENT);
-        confirmLabel.setBorder(new EmptyBorder(12, 0, 0, 0));
         confirmPasswordField = new JPasswordField();
         styleTextField(confirmPasswordField);
+        confirmPasswordField.setMaximumSize(new Dimension(320, 44));
         confirmPasswordField.setAlignmentX(LEFT_ALIGNMENT);
         confirmPasswordField.addActionListener(e -> handleRegisterClicked());
 
-        // ---- Message label (success / error) ----
+        confirmGroup.add(confirmLabel);
+        confirmGroup.add(Box.createRigidArea(new Dimension(0, 6)));
+        confirmGroup.add(confirmPasswordField);
+
+        // Message label
         messageLabel = makeLabel("", 12, Font.PLAIN, ERROR_RED);
-        messageLabel.setAlignmentX(LEFT_ALIGNMENT);
+        messageLabel.setAlignmentX(CENTER_ALIGNMENT);
         messageLabel.setBorder(new EmptyBorder(8, 0, 0, 0));
         messageLabel.setVisible(false);
 
-        // ---- Register button ----
+        // Buttons / links
         JButton registerButton = makeButton("Create Account");
         registerButton.setAlignmentX(CENTER_ALIGNMENT);
         registerButton.addActionListener(e -> handleRegisterClicked());
 
-        // ---- Back to Login link ----
         JLabel loginLink = makeLabel("Already have an account?  Sign in", 12, Font.PLAIN, ACCENT_BLUE);
         loginLink.setAlignmentX(CENTER_ALIGNMENT);
         loginLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         loginLink.setBorder(new EmptyBorder(14, 0, 0, 0));
         loginLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                onGoToLogin.run(); // Switch back to LoginPanel
-            }
+            @Override public void mouseClicked(MouseEvent e) { onGoToLogin.run(); }
         });
 
-        // ---- Assemble card ----
+        // Assemble
         card.add(iconLabel);
         card.add(titleLabel);
         card.add(subLabel);
-        card.add(userLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(usernameField);
-        card.add(emailLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(emailField);
-        card.add(passLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(passwordField);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(strengthBar);
-        card.add(strengthLabel);
-        card.add(confirmLabel);
-        card.add(Box.createRigidArea(new Dimension(0, 6)));
-        card.add(confirmPasswordField);
+        card.add(userGroup);
+        card.add(emailGroup);
+        card.add(passGroup);
+        card.add(confirmGroup);
         card.add(messageLabel);
         card.add(Box.createRigidArea(new Dimension(0, 20)));
         card.add(registerButton);
@@ -255,37 +278,28 @@ public class RegisterPanel extends JPanel {
         add(card, new GridBagConstraints());
     }
 
-
     // -------------------------------------------------------
     //  handleRegisterClicked()
     // -------------------------------------------------------
 
     /**
      * Reads all fields and calls AuthService.register().
-     * Shows success or error feedback.
-     *
-     * Called by the Register button and Enter key in confirmPasswordField.
      */
     private void handleRegisterClicked() {
-
         String username = usernameField.getText().trim();
-        String email    = emailField.getText().trim();
+        String email = emailField.getText().trim();
         String password = new String(passwordField.getPassword());
-        String confirm  = new String(confirmPasswordField.getPassword());
+        String confirm = new String(confirmPasswordField.getPassword());
 
-        // Call AuthService — it validates and saves to DB
         String result = authService.register(username, email, password, confirm);
 
         if ("SUCCESS".equals(result)) {
-            // Show success message in green, then navigate to login
             showMessage("Account created! Please log in.", SUCCESS_GRN);
             clearFields();
-            // Auto-navigate to login after 1.5 seconds
             Timer timer = new Timer(1500, e -> onGoToLogin.run());
             timer.setRepeats(false);
             timer.start();
         } else {
-            // Show the error message from AuthService in red
             showMessage(result, ERROR_RED);
         }
     }
