@@ -1,64 +1,28 @@
 package com.recipe.database;
 
 import com.recipe.models.Nutrition;
-
 import java.sql.*;
 
-/**
- * ============================================================
- *  FILE        : NutritionDAO.java
- *  PACKAGE     : com.recipe.database
- *  AUTHOR      : Uzair
- *  MODULE      : Meal Planning & Nutrition
- * ============================================================
- *
- *  WHAT THIS CLASS DOES:
- *  ----------------------
- *  DAO (Data Access Object) for the NUTRITION table.
- *  Handles all INSERT and SELECT operations for nutrition data.
- *
- *  LAYER:
- *    NutritionCalculator (service)  →  NutritionDAO  →  PostgreSQL
- *                                          ↑
- *                                  DatabaseConnection
- *
- *  TABLE SCHEMA EXPECTED:
- *  ----------------------
- *  CREATE TABLE nutrition (
- *      nutrition_id SERIAL PRIMARY KEY,
- *      recipe_id    INT REFERENCES recipes(recipe_id),
- *      calories     DOUBLE PRECISION,
- *      protein_g    DOUBLE PRECISION,
- *      carbs_g      DOUBLE PRECISION,
- *      fat_g        DOUBLE PRECISION
- *  );
- *
- *  VIVA TIP:
- *  ---------
- *  "NutritionDAO uses PreparedStatements to prevent SQL injection
- *   and try-with-resources to guarantee connections are returned
- *   to Ahmad's HikariCP pool even if an exception occurs."
- */
+// ============================================================
+//  FILE    : NutritionDAO.java
+//  AUTHOR  : Uzair
+//  PURPOSE : Handles all SQL for the nutrition table.
+//            NutritionCalculator (service) calls this — GUI never does.
+// ============================================================
+//
+//  LAYER:
+//    NutritionPanel  →  NutritionCalculator  →  NutritionDAO  →  PostgreSQL
+//                                                     ↑
+//                                           DatabaseConnection (Ahmad's)
+
 public class NutritionDAO {
 
-    // -------------------------------------------------------
+    // --------------------------------------------------------
     //  getNutritionByRecipeId()
-    // -------------------------------------------------------
-
-    /**
-     * Reads the nutrition row for a given recipe.
-     *
-     * Called by: NutritionCalculator.getNutrition(recipeId)
-     *
-     * @param recipeId The recipe whose nutrition we want
-     * @return A Nutrition object, or null if no row exists yet
-     *
-     * SQL: SELECT * FROM nutrition WHERE recipe_id = ?
-     */
+    //  Returns the nutrition row for one recipe, or null if none saved yet.
+    // --------------------------------------------------------
     public Nutrition getNutritionByRecipeId(int recipeId) {
-
-        String sql = "SELECT nutrition_id, recipe_id, calories, "
-                   + "protein_g, carbs_g, fat_g "
+        String sql = "SELECT nutrition_id, recipe_id, calories, protein_g, carbs_g, fat_g "
                    + "FROM nutrition WHERE recipe_id = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -81,39 +45,25 @@ public class NutritionDAO {
         } catch (SQLException e) {
             System.err.println("[NutritionDAO] getNutritionByRecipeId() failed: " + e.getMessage());
         }
-
-        return null; // No nutrition data recorded for this recipe yet
+        return null;
     }
 
-
-    // -------------------------------------------------------
+    // --------------------------------------------------------
     //  insertNutrition()
-    // -------------------------------------------------------
-
-    /**
-     * Saves a new nutrition row to the database.
-     *
-     * Called by: NutritionCalculator when new nutrition data is entered.
-     *
-     * @param nutrition A Nutrition object with all fields set (except id — DB assigns it)
-     * @return true if the INSERT succeeded, false otherwise
-     *
-     * SQL: INSERT INTO nutrition (recipe_id, calories, protein_g, carbs_g, fat_g)
-     *      VALUES (?, ?, ?, ?, ?)
-     */
-    public boolean insertNutrition(Nutrition nutrition) {
-
+    //  Saves a new nutrition row. DB auto-assigns nutrition_id.
+    // --------------------------------------------------------
+    public boolean insertNutrition(Nutrition n) {
         String sql = "INSERT INTO nutrition (recipe_id, calories, protein_g, carbs_g, fat_g) "
                    + "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, nutrition.getRecipeId());
-            ps.setDouble(2, nutrition.getCalories());
-            ps.setDouble(3, nutrition.getProteinG());
-            ps.setDouble(4, nutrition.getCarbsG());
-            ps.setDouble(5, nutrition.getFatG());
+            ps.setInt(1,    n.getRecipeId());
+            ps.setDouble(2, n.getCalories());
+            ps.setDouble(3, n.getProteinG());
+            ps.setDouble(4, n.getCarbsG());
+            ps.setDouble(5, n.getFatG());
 
             return ps.executeUpdate() > 0;
 
@@ -123,34 +73,22 @@ public class NutritionDAO {
         }
     }
 
-
-    // -------------------------------------------------------
+    // --------------------------------------------------------
     //  updateNutrition()
-    // -------------------------------------------------------
-
-    /**
-     * Updates an existing nutrition row for a recipe.
-     * Useful if nutritional values are corrected later.
-     *
-     * @param nutrition Nutrition object with updated values and correct recipeId
-     * @return true if the UPDATE succeeded
-     *
-     * SQL: UPDATE nutrition SET calories=?, protein_g=?, carbs_g=?, fat_g=?
-     *      WHERE recipe_id = ?
-     */
-    public boolean updateNutrition(Nutrition nutrition) {
-
+    //  Overwrites existing nutrition values for a recipe.
+    // --------------------------------------------------------
+    public boolean updateNutrition(Nutrition n) {
         String sql = "UPDATE nutrition SET calories=?, protein_g=?, carbs_g=?, fat_g=? "
                    + "WHERE recipe_id=?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setDouble(1, nutrition.getCalories());
-            ps.setDouble(2, nutrition.getProteinG());
-            ps.setDouble(3, nutrition.getCarbsG());
-            ps.setDouble(4, nutrition.getFatG());
-            ps.setInt(5, nutrition.getRecipeId());
+            ps.setDouble(1, n.getCalories());
+            ps.setDouble(2, n.getProteinG());
+            ps.setDouble(3, n.getCarbsG());
+            ps.setDouble(4, n.getFatG());
+            ps.setInt(5,    n.getRecipeId());
 
             return ps.executeUpdate() > 0;
 
