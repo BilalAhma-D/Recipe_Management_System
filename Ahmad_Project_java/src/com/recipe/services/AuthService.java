@@ -2,7 +2,6 @@ package com.recipe.services;
 
 import com.recipe.database.UserDAO;
 import com.recipe.models.User;
-import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * ============================================================
@@ -137,10 +136,7 @@ public class AuthService {
         }
 
         // ---- STEP 6: Hash the password with BCrypt ----
-        // BCrypt.gensalt() creates a random "salt" (makes each hash unique)
-        // BCrypt.hashpw() combines the salt and password into a secure hash
-        // The result looks like: "$2a$10$randomSaltAndHashHere..."
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        String hashedPassword = PasswordHasher.hash(password);
 
         // ---- STEP 7: Build the User object ----
         // We do NOT set the ID — the database assigns it automatically (SERIAL / auto-increment)
@@ -200,9 +196,7 @@ public class AuthService {
         }
 
         // ---- STEP 4: Compare the typed password against the stored BCrypt hash ----
-        // BCrypt.checkpw(plain, hash) returns true if they match, false otherwise
-        // This works even though the hash looks completely different from the password
-        boolean passwordMatches = BCrypt.checkpw(password, user.getPasswordHash());
+        boolean passwordMatches = PasswordHasher.check(password, user.getPasswordHash());
 
         // ---- STEP 5: Wrong password → login fails ----
         if (!passwordMatches) {
@@ -274,7 +268,7 @@ public class AuthService {
         }
 
         // ---- STEP 2: Verify old password is correct ----
-        boolean oldPasswordOk = BCrypt.checkpw(oldPassword, currentUser.getPasswordHash());
+        boolean oldPasswordOk = PasswordHasher.check(oldPassword, currentUser.getPasswordHash());
         if (!oldPasswordOk) {
             return "Old password is incorrect.";
         }
@@ -290,7 +284,7 @@ public class AuthService {
         }
 
         // ---- STEP 5: Hash the new password ----
-        String newHash = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+        String newHash = PasswordHasher.hash(newPassword);
 
         // ---- STEP 6: Update in the database ----
         boolean updated = userDAO.updatePassword(currentUser.getId(), newHash);

@@ -1,11 +1,11 @@
 package com.recipe.database;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -71,11 +71,9 @@ public class DatabaseConnection {
      */
     private static DatabaseConnection instance = null;
 
-    /**
-     * HikariDataSource is the connection pool itself.
-     * It holds multiple real JDBC connections internally and lends them out.
-     */
-    private HikariDataSource dataSource;
+    private final String jdbcUrl;
+    private final String username;
+    private final String password;
 
 
     // -------------------------------------------------------
@@ -93,37 +91,16 @@ public class DatabaseConnection {
      */
     private DatabaseConnection() {
 
-        // Step 1: Load settings from db.properties file
-        // (db.properties is in the resources/ folder and contains
-        //  the host, port, database name, username, and password)
         Properties props = loadProperties();
+        this.jdbcUrl  = props.getProperty("db.url");
+        this.username = props.getProperty("db.username");
+        this.password = props.getProperty("db.password");
 
-        // Step 2: Configure HikariCP using those settings
-        HikariConfig config = new HikariConfig();
+        if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
+            throw new RuntimeException("[DatabaseConnection] db.url is not configured.");
+        }
 
-        // The JDBC URL tells Java which database server to connect to.
-        // Format: jdbc:postgresql://HOST:PORT/DATABASE_NAME
-        config.setJdbcUrl(props.getProperty("db.url"));
-
-        // Username and password from db.properties
-        config.setUsername(props.getProperty("db.username"));
-        config.setPassword(props.getProperty("db.password"));
-
-        // Maximum number of real DB connections kept open in the pool.
-        // 10 is enough for a desktop app with a few simultaneous DAOs.
-        config.setMaximumPoolSize(10);
-
-        // How long (ms) to wait for a free connection before throwing an error.
-        // 30 seconds is generous for a student project.
-        config.setConnectionTimeout(30000);
-
-        // A name for the pool — shows in logs so we know which pool it is.
-        config.setPoolName("RecipeAppPool");
-
-        // Step 3: Create the actual pool using our config
-        this.dataSource = new HikariDataSource(config);
-
-        System.out.println("[DatabaseConnection] Connection pool started successfully.");
+        System.out.println("[DatabaseConnection] Initialized with JDBC URL: " + jdbcUrl);
     }
 
 
@@ -170,7 +147,7 @@ public class DatabaseConnection {
      * @throws SQLException if the pool has no free connections or the DB is unreachable
      */
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        return DriverManager.getConnection(jdbcUrl, username, password);
     }
 
 
@@ -179,19 +156,11 @@ public class DatabaseConnection {
     // -------------------------------------------------------
 
     /**
-     * Closes the entire connection pool.
-     *
-     * Call this once when the application window closes (in MainWindow's
-     * windowClosing listener). This releases all open sockets to PostgreSQL.
-     *
-     * After this is called, getConnection() will fail — so only call
-     * this at the very end of the program.
+     * Nothing to shut down when using DriverManager directly.
+     * Connections are closed by the caller after use.
      */
     public void shutdown() {
-        if (dataSource != null && !dataSource.isClosed()) {
-            dataSource.close();
-            System.out.println("[DatabaseConnection] Connection pool shut down.");
-        }
+        System.out.println("[DatabaseConnection] Shutdown called; no pool to close.");
     }
 
 
@@ -218,22 +187,33 @@ public class DatabaseConnection {
 
         // getResourceAsStream looks for the file inside the classpath
         // (i.e., the resources/ folder in IntelliJ projects)
-        try (InputStream input = getClass()
+        InputStream input = getClass()
                 .getClassLoader()
-                .getResourceAsStream("db.properties")) {
+                .getResourceAsStream("db.properties");
 
-            if (input == null) {
-                // File not found — give a helpful error message
-                throw new RuntimeException(
-                    "[DatabaseConnection] ERROR: db.properties file not found!\n"
-                    + "Make sure db.properties exists in your src/main/resources/ folder.\n"
-                    + "It should contain: db.url, db.username, db.password"
-                );
+        if (input == null) {
+            File fallback = new File("src/db.properties");
+            if (fallback.exists()) {
+                try {
+                    input = new FileInputStream(fallback);
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                        "[DatabaseConnection] ERROR: Could not read fallback db.properties file — " + e.getMessage(), e
+                    );
+                }
             }
+        }
 
-            // Load all key=value lines from the file into props
-            props.load(input);
+        if (input == null) {
+            throw new RuntimeException(
+                "[DatabaseConnection] ERROR: db.properties file not found!\n"
+                + "Make sure db.properties exists in your classpath or in src/db.properties.\n"
+                + "It should contain: db.url, db.username, db.password"
+            );
+        }
 
+        try (InputStream in = input) {
+            props.load(in);
         } catch (IOException e) {
             throw new RuntimeException(
                 "[DatabaseConnection] ERROR: Could not read db.properties — " + e.getMessage(), e

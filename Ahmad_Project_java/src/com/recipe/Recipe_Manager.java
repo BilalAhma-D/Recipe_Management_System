@@ -1,8 +1,11 @@
 package com.recipe;
 
 import com.recipe.database.DatabaseConnection;
+import com.recipe.database.RecipeDAO;
 import com.recipe.gui.*;
+import com.recipe.models.Recipe;
 import com.recipe.services.AuthService;
+import com.recipe.services.RecipeService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,6 +60,13 @@ public class Recipe_Manager {
     // ---- Shared service (Ahmad owns this) ----
     private static AuthService authService;
 
+    // ---- Recipe module wiring (Bilal's GUI) ----
+    private static CardLayout   recipeCards;
+    private static JPanel       recipeCardPanel;
+    private static RecipeService recipeService;
+    private static RecipeListPanel recipeListPanel;
+    private static AppNavigator recipeNavigator;
+
 
     public static void main(String[] args) {
         // All Swing work must happen on the Event Dispatch Thread
@@ -70,16 +80,16 @@ public class Recipe_Manager {
 
     private static void buildAndShowApp() {
 
-        // ---- Apply FlatLaf look-and-feel (dark theme) ----
-        // Make sure FlatLaf is in your pom.xml:
-        //   <dependency>
-        //     <groupId>com.formdev</groupId>
-        //     <artifactId>flatlaf</artifactId>
-        //     <version>3.2.5</version>
-        //   </dependency>
+        // ---- Apply FlatLaf look-and-feel (dark theme) if available ----
         try {
-            com.formdev.flatlaf.FlatDarkLaf.setup();
+            Class<?> lafClass = Class.forName("com.formdev.flatlaf.FlatDarkLaf");
+            lafClass.getMethod("setup").invoke(null);
         } catch (Exception e) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignore) {
+                // Ignore failures and continue with default L&F
+            }
             System.err.println("[Main] FlatLaf not found — using system L&F. " + e.getMessage());
         }
 
@@ -180,16 +190,9 @@ public class Recipe_Manager {
         GroceryListPanel groceryListPanel = new GroceryListPanel();
         homeTabs.addTab("Grocery",   groceryListPanel);
 
-        // ---- TAB 4: Bilal — Recipes (PLACEHOLDER) ----
-        // TODO: Replace this stub with Bilal's RecipePanel when ready.
-        //   Current line → homeTabs.addTab("Recipes", new JPanel());
-        //   Replace with → homeTabs.addTab("Recipes", new RecipePanel());
-        JPanel recipesPlaceholder = makePlaceholderTab(
-                "Recipes",
-                "Bilal's module",
-                "RecipePanel will go here.\nReplace the stub in Main.java → TAB 4."
-        );
-        homeTabs.addTab("Recipes", recipesPlaceholder);
+        // ---- TAB 4: Bilal — Recipes ----
+        JPanel recipesPanel = createRecipesTab();
+        homeTabs.addTab("Recipes", recipesPanel);
 
         // ---- TAB 5: Raja — Search (PLACEHOLDER) ----
         // TODO: Replace this stub with Raja's SearchPanel when ready.
@@ -209,10 +212,58 @@ public class Recipe_Manager {
             if (selected == 0) profilePanel.refreshUserData();
             if (selected == 1) mealPlannerPanel.loadWeek();
             if (selected == 2) groceryListPanel.loadIngredients();
+            if (selected == 3 && recipeListPanel != null) recipeListPanel.loadRecipes();
         });
 
         wrapper.add(homeTabs, BorderLayout.CENTER);
         return wrapper;
+    }
+
+    // -------------------------------------------------------
+    //  createRecipesTab()  — integrates Bilal's recipe UI
+    // -------------------------------------------------------
+
+    private static JPanel createRecipesTab() {
+        recipeCards = new CardLayout();
+        recipeCardPanel = new JPanel(recipeCards);
+        recipeService = new RecipeService(new RecipeDAO());
+
+        recipeNavigator = new AppNavigator() {
+            @Override
+            public void navigateToRecipeList() {
+                if (recipeListPanel != null) {
+                    recipeListPanel.loadRecipes();
+                }
+                recipeCards.show(recipeCardPanel, "RECIPE_LIST");
+            }
+
+            @Override
+            public void navigateToAddRecipe() {
+                AddRecipePanel addPanel = new AddRecipePanel(recipeService, this);
+                recipeCardPanel.add(addPanel, "ADD_RECIPE");
+                recipeCards.show(recipeCardPanel, "ADD_RECIPE");
+            }
+
+            @Override
+            public void navigateToEditRecipe(Recipe recipe) {
+                AddRecipePanel editPanel = new AddRecipePanel(recipeService, this, recipe);
+                recipeCardPanel.add(editPanel, "EDIT_RECIPE");
+                recipeCards.show(recipeCardPanel, "EDIT_RECIPE");
+            }
+
+            @Override
+            public void navigateToRecipeDetail(Recipe recipe) {
+                RecipeDetailPanel detailPanel = new RecipeDetailPanel(recipe, recipeService, this);
+                recipeCardPanel.add(detailPanel, "RECIPE_DETAIL");
+                recipeCards.show(recipeCardPanel, "RECIPE_DETAIL");
+            }
+        };
+
+        recipeListPanel = new RecipeListPanel(recipeService, recipeNavigator);
+        recipeCardPanel.add(recipeListPanel, "RECIPE_LIST");
+        recipeCards.show(recipeCardPanel, "RECIPE_LIST");
+        recipeCardPanel.setBackground(new Color(15, 15, 30));
+        return recipeCardPanel;
     }
 
 
