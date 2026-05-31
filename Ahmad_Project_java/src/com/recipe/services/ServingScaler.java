@@ -1,7 +1,6 @@
 package com.recipe.services;
 
 import com.recipe.models.RecipeIngredient;
-import com.recipe.models.Ingredient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
