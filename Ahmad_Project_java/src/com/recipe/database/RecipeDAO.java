@@ -31,74 +31,65 @@ public class RecipeDAO {
     // (Defining SQL as constants keeps methods clean and easy to edit)
 
     // Recipes table
-    private static final String SQL_INSERT_RECIPE =
-            "INSERT INTO recipes (user_id, category_id, title, description, " +
+    private static final String SQL_INSERT_RECIPE = "INSERT INTO recipes (user_id, category_id, title, description, " +
             "prep_time, cook_time, servings, difficulty, estimated_cost, " +
             "cook_count, photo_path, steps) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    private static final String SQL_SELECT_ALL_RECIPES =
-            "SELECT id, user_id, category_id, title, description, prep_time, " +
+    private static final String SQL_SELECT_ALL_RECIPES = "SELECT id, user_id, category_id, title, description, prep_time, "
+            +
             "cook_time, servings, difficulty, estimated_cost, cook_count, " +
             "photo_path, steps, created_at " +
             "FROM recipes ORDER BY id DESC";
 
-    private static final String SQL_SELECT_RECIPE_BY_ID =
-            "SELECT id, user_id, category_id, title, description, prep_time, " +
+    private static final String SQL_SELECT_RECIPE_BY_ID = "SELECT id, user_id, category_id, title, description, prep_time, "
+            +
             "cook_time, servings, difficulty, estimated_cost, cook_count, " +
             "photo_path, steps, created_at " +
             "FROM recipes WHERE id = ?";
 
-    private static final String SQL_UPDATE_RECIPE =
-            "UPDATE recipes SET category_id=?, title=?, description=?, " +
+    private static final String SQL_UPDATE_RECIPE = "UPDATE recipes SET category_id=?, title=?, description=?, " +
             "prep_time=?, cook_time=?, servings=?, difficulty=?, " +
             "estimated_cost=?, photo_path=?, steps=? " +
             "WHERE id=?";
 
-    private static final String SQL_DELETE_RECIPE =
-            "DELETE FROM recipes WHERE id = ?";
+    private static final String SQL_DELETE_RECIPE = "DELETE FROM recipes WHERE id = ?";
 
-    private static final String SQL_GET_MOST_COOKED =
-            "SELECT id, user_id, category_id, title, description, prep_time, " +
+    private static final String SQL_GET_MOST_COOKED = "SELECT id, user_id, category_id, title, description, prep_time, "
+            +
             "cook_time, servings, difficulty, estimated_cost, cook_count, " +
             "photo_path, steps, created_at " +
             "FROM recipes ORDER BY cook_count DESC LIMIT ?";
 
-    private static final String SQL_GET_RECIPES_BY_USER =
-            "SELECT id, user_id, category_id, title, description, prep_time, " +
+    private static final String SQL_GET_RECIPES_BY_USER = "SELECT id, user_id, category_id, title, description, prep_time, "
+            +
             "cook_time, servings, difficulty, estimated_cost, cook_count, " +
             "photo_path, steps, created_at " +
             "FROM recipes WHERE user_id = ? ORDER BY id DESC";
 
-    private static final String SQL_INCREMENT_COOK_COUNT =
-            "UPDATE recipes SET cook_count = cook_count + 1 WHERE id = ?";
+    private static final String SQL_INCREMENT_COOK_COUNT = "UPDATE recipes SET cook_count = cook_count + 1 WHERE id = ?";
 
-    //Ingredients table
-    private static final String SQL_INSERT_INGREDIENT =
-            "INSERT INTO ingredients (name, unit, allergen_flag) VALUES (?, ?, ?)";
+    // Ingredients table
+    private static final String SQL_INSERT_INGREDIENT = "INSERT INTO ingredients (name, unit, allergen_flag) VALUES (?, ?, ?)";
 
-    private static final String SQL_SELECT_INGREDIENT_BY_NAME =
-            "SELECT id, name, unit, allergen_flag FROM ingredients WHERE LOWER(name) = LOWER(?)";
+    private static final String SQL_SELECT_INGREDIENT_BY_NAME = "SELECT id, name, unit, allergen_flag FROM ingredients WHERE LOWER(name) = LOWER(?)";
 
-    private static final String SQL_SELECT_INGREDIENT_BY_ID =
-            "SELECT id, name, unit, allergen_flag FROM ingredients WHERE id = ?";
+    private static final String SQL_SELECT_INGREDIENT_BY_ID = "SELECT id, name, unit, allergen_flag FROM ingredients WHERE id = ?";
 
-    //Recipe_ingredients junction table
-    private static final String SQL_INSERT_RECIPE_INGREDIENT =
-            "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, price_per_unit) " +
+    // Recipe_ingredients junction table
+    private static final String SQL_INSERT_RECIPE_INGREDIENT = "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, price_per_unit) "
+            +
             "VALUES (?, ?, ?, ?)";
 
-    private static final String SQL_SELECT_INGREDIENTS_BY_RECIPE =
-            "SELECT ri.id, ri.recipe_id, ri.ingredient_id, ri.quantity, ri.price_per_unit, " +
+    private static final String SQL_SELECT_INGREDIENTS_BY_RECIPE = "SELECT ri.id, ri.recipe_id, ri.ingredient_id, ri.quantity, ri.price_per_unit, "
+            +
             "       i.name AS ing_name, i.unit AS ing_unit, i.allergen_flag " +
             "FROM recipe_ingredients ri " +
             "JOIN ingredients i ON ri.ingredient_id = i.id " +
             "WHERE ri.recipe_id = ? " +
             "ORDER BY ri.id ASC";
 
-    private static final String SQL_DELETE_INGREDIENTS_BY_RECIPE =
-            "DELETE FROM recipe_ingredients WHERE recipe_id = ?";
-
+    private static final String SQL_DELETE_INGREDIENTS_BY_RECIPE = "DELETE FROM recipe_ingredients WHERE recipe_id = ?";
 
     // Recipe Crud Methods
 
@@ -117,22 +108,22 @@ public class RecipeDAO {
      */
     public boolean insertRecipe(Recipe recipe) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_INSERT_RECIPE,
-                     Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_INSERT_RECIPE,
+                        Statement.RETURN_GENERATED_KEYS)) {
 
             // Bind all fields to '?' placeholders in order
-            ps.setInt(1,           recipe.getUserId());
-            ps.setInt(2,           recipe.getCategoryId());
-            ps.setString(3,        recipe.getTitle());
-            ps.setString(4,        recipe.getDescription());
-            ps.setInt(5,           recipe.getPrepTime());
-            ps.setInt(6,           recipe.getCookTime());
-            ps.setInt(7,           recipe.getServings());
-            ps.setString(8,        recipe.getDifficulty());
-            ps.setBigDecimal(9,    recipe.getEstimatedCost());
-            ps.setInt(10,          recipe.getCookCount());   // starts at 0
-            ps.setString(11,       recipe.getPhotoPath());
-            ps.setString(12,       recipe.getSteps());
+            ps.setInt(1, recipe.getUserId());
+            ps.setInt(2, recipe.getCategoryId());
+            ps.setString(3, recipe.getTitle());
+            ps.setString(4, recipe.getDescription());
+            ps.setInt(5, recipe.getPrepTime());
+            ps.setInt(6, recipe.getCookTime());
+            ps.setInt(7, recipe.getServings());
+            ps.setString(8, recipe.getDifficulty());
+            ps.setBigDecimal(9, recipe.getEstimatedCost());
+            ps.setInt(10, recipe.getCookCount()); // starts at 0
+            ps.setString(11, recipe.getPhotoPath());
+            ps.setString(12, recipe.getSteps());
 
             int rowsInserted = ps.executeUpdate();
 
@@ -141,7 +132,7 @@ public class RecipeDAO {
                 ResultSet generatedKeys = ps.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     int generatedId = generatedKeys.getInt(1);
-                    recipe.setId(generatedId);   // Now recipe knows its DB id
+                    recipe.setId(generatedId); // Now recipe knows its DB id
                 }
                 return true;
             }
@@ -159,7 +150,8 @@ public class RecipeDAO {
      *
      * 1. Gets a connection from DatabaseConnection.
      * 2. Executes SELECT * FROM recipes ORDER BY id DESC.
-     * 3. For each row in ResultSet, calls mapRowToRecipe() to build a Recipe object.
+     * 3. For each row in ResultSet, calls mapRowToRecipe() to build a Recipe
+     * object.
      * 4. Returns the complete list.
      *
      * Called by: RecipeService.getAllRecipes() RecipeListPanel.loadRecipes()
@@ -168,8 +160,8 @@ public class RecipeDAO {
         List<Recipe> recipes = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_ALL_RECIPES);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(SQL_SELECT_ALL_RECIPES);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 recipes.add(mapRowToRecipe(rs));
@@ -191,12 +183,12 @@ public class RecipeDAO {
      * 2. If found, maps the row to a Recipe object and returns it.
      * 3. If not found, returns null.
      *
-     * Called by: RecipeService.getRecipeById()  RecipeDetailPanel (on card click)
+     * Called by: RecipeService.getRecipeById() RecipeDetailPanel (on card click)
      * 
      */
     public Recipe getRecipeById(int id) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_RECIPE_BY_ID)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_SELECT_RECIPE_BY_ID)) {
 
             ps.setInt(1, id);
 
@@ -211,7 +203,7 @@ public class RecipeDAO {
             e.printStackTrace();
         }
 
-        return null;  // Recipe with this id was not found
+        return null; // Recipe with this id was not found
     }
 
     /**
@@ -222,26 +214,27 @@ public class RecipeDAO {
      * 2. Binds new values from the Recipe object.
      * 3. The WHERE id=? ensures only THIS recipe is updated.
      *
-     * NOTE: userId and created_at are NOT updated - they never change after creation.
+     * NOTE: userId and created_at are NOT updated - they never change after
+     * creation.
      *
-     * Called by: RecipeService.updateRecipe()  AddRecipePanel (in edit mode)
+     * Called by: RecipeService.updateRecipe() AddRecipePanel (in edit mode)
      * 
      */
     public boolean updateRecipe(Recipe recipe) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_RECIPE)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_UPDATE_RECIPE)) {
 
-            ps.setInt(1,        recipe.getCategoryId());
-            ps.setString(2,     recipe.getTitle());
-            ps.setString(3,     recipe.getDescription());
-            ps.setInt(4,        recipe.getPrepTime());
-            ps.setInt(5,        recipe.getCookTime());
-            ps.setInt(6,        recipe.getServings());
-            ps.setString(7,     recipe.getDifficulty());
+            ps.setInt(1, recipe.getCategoryId());
+            ps.setString(2, recipe.getTitle());
+            ps.setString(3, recipe.getDescription());
+            ps.setInt(4, recipe.getPrepTime());
+            ps.setInt(5, recipe.getCookTime());
+            ps.setInt(6, recipe.getServings());
+            ps.setString(7, recipe.getDifficulty());
             ps.setBigDecimal(8, recipe.getEstimatedCost());
-            ps.setString(9,     recipe.getPhotoPath());
-            ps.setString(10,    recipe.getSteps());
-            ps.setInt(11,       recipe.getId());   // WHERE id = ?
+            ps.setString(9, recipe.getPhotoPath());
+            ps.setString(10, recipe.getSteps());
+            ps.setInt(11, recipe.getId()); // WHERE id = ?
 
             return ps.executeUpdate() == 1;
 
@@ -257,37 +250,36 @@ public class RecipeDAO {
      *
      * Steps:
      * 1. First deletes ALL rows in recipe_ingredients where recipe_id = id.
-     *    (Required to avoid FK constraint violation — child rows deleted before parent.)
+     * (Required to avoid FK constraint violation — child rows deleted before
+     * parent.)
      * 2. Then deletes the recipe row itself from the recipes table.
      * 3. Both operations run inside a single DB transaction — if step 2 fails,
-     *    step 1 is rolled back to keep the database consistent.
+     * step 1 is rolled back to keep the database consistent.
      *
-     * Called by: RecipeService.deleteRecipe()  RecipeDetailPanel (Delete button)
+     * Called by: RecipeService.deleteRecipe() RecipeDetailPanel (Delete button)
      */
     public boolean deleteRecipe(int id) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getInstance().getConnection();
-            conn.setAutoCommit(false);   // Start transaction
+            conn.setAutoCommit(false); // Start transaction
 
             // 1: Delete ingredient rows first (FK child before parent)
-            try (PreparedStatement deleteIngredients =
-                         conn.prepareStatement(SQL_DELETE_INGREDIENTS_BY_RECIPE)) {
+            try (PreparedStatement deleteIngredients = conn.prepareStatement(SQL_DELETE_INGREDIENTS_BY_RECIPE)) {
                 deleteIngredients.setInt(1, id);
                 deleteIngredients.executeUpdate();
             }
 
             // 2: Delete the recipe itself
-            try (PreparedStatement deleteRecipe =
-                         conn.prepareStatement(SQL_DELETE_RECIPE)) {
+            try (PreparedStatement deleteRecipe = conn.prepareStatement(SQL_DELETE_RECIPE)) {
                 deleteRecipe.setInt(1, id);
                 int rowsDeleted = deleteRecipe.executeUpdate();
 
                 if (rowsDeleted == 1) {
-                    conn.commit();   // Both deletes succeeded - commit transaction
+                    conn.commit(); // Both deletes succeeded - commit transaction
                     return true;
                 } else {
-                    conn.rollback();  // Recipe didn't exist - roll back
+                    conn.rollback(); // Recipe didn't exist - roll back
                     return false;
                 }
             }
@@ -296,15 +288,19 @@ public class RecipeDAO {
             System.err.println("[RecipeDAO] deleteRecipe(" + id + ") failed: " + e.getMessage());
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ignored) {}
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
             }
             return false;
         } finally {
             if (conn != null) {
                 try {
-                    conn.setAutoCommit(true);  // Restore default
+                    conn.setAutoCommit(true); // Restore default
                     conn.close();
-                } catch (SQLException ignored) {}
+                } catch (SQLException ignored) {
+                }
             }
         }
     }
@@ -313,13 +309,13 @@ public class RecipeDAO {
      * Returns the top N most-cooked recipes, ordered by cook_count descending.
      * Used by the Dashboard screen to show "Most Cooked" stat card.
      *
-     * Called by: RecipeService.getMostCooked(n)  DashboardPanel
+     * Called by: RecipeService.getMostCooked(n) DashboardPanel
      */
     public List<Recipe> getMostCooked(int n) {
         List<Recipe> recipes = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_GET_MOST_COOKED)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_GET_MOST_COOKED)) {
 
             ps.setInt(1, n);
 
@@ -347,7 +343,7 @@ public class RecipeDAO {
         List<Recipe> recipes = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_GET_RECIPES_BY_USER)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_GET_RECIPES_BY_USER)) {
 
             ps.setInt(1, userId);
 
@@ -371,12 +367,12 @@ public class RecipeDAO {
      * This is safer than read-modify-write in case of concurrent updates.
      *
      * Called by: RecipeService.incrementCookCount(id)
-     *             RecipeDetailPanel when user clicks "Start Cooking"
-
+     * RecipeDetailPanel when user clicks "Start Cooking"
+     * 
      */
     public void incrementCookCount(int recipeId) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_INCREMENT_COOK_COUNT)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_INCREMENT_COOK_COUNT)) {
 
             ps.setInt(1, recipeId);
             ps.executeUpdate();
@@ -387,8 +383,7 @@ public class RecipeDAO {
         }
     }
 
-
-    //  Ingridents Methods
+    // Ingridents Methods
 
     /*
      * Inserts a NEW ingredient into the master ingredients table.
@@ -399,11 +394,11 @@ public class RecipeDAO {
      */
     public boolean insertIngredient(Ingredient ingredient) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_INSERT_INGREDIENT,
-                     Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_INSERT_INGREDIENT,
+                        Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1,  ingredient.getName());
-            ps.setString(2,  ingredient.getUnit());
+            ps.setString(1, ingredient.getName());
+            ps.setString(2, ingredient.getUnit());
             ps.setBoolean(3, ingredient.isAllergen());
 
             int rows = ps.executeUpdate();
@@ -431,7 +426,7 @@ public class RecipeDAO {
      */
     public Ingredient findIngredientByName(String name) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_INGREDIENT_BY_NAME)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_SELECT_INGREDIENT_BY_NAME)) {
 
             ps.setString(1, name);
 
@@ -446,10 +441,10 @@ public class RecipeDAO {
             e.printStackTrace();
         }
 
-        return null;  // Not found
+        return null; // Not found
     }
 
-    //  Recipe_Ingredients function talbe methods
+    // Recipe_Ingredients function talbe methods
 
     /**
      * Inserts ONE row into recipe_ingredients linking a recipe to an ingredient
@@ -465,11 +460,11 @@ public class RecipeDAO {
      */
     public boolean insertRecipeIngredient(RecipeIngredient ri) {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_INSERT_RECIPE_INGREDIENT,
-                     Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_INSERT_RECIPE_INGREDIENT,
+                        Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,        ri.getRecipeId());
-            ps.setInt(2,        ri.getIngredientId());
+            ps.setInt(1, ri.getRecipeId());
+            ps.setInt(2, ri.getIngredientId());
             ps.setBigDecimal(3, ri.getQuantity());
             ps.setBigDecimal(4, ri.getPricePerUnit());
 
@@ -495,26 +490,27 @@ public class RecipeDAO {
      * details populated via a JOIN with the ingredients table.
      *
      * SQL used:
-     *   SELECT ri.*, i.name, i.unit, i.allergen_flag
-     *   FROM recipe_ingredients ri
-     *   JOIN ingredients i ON ri.ingredient_id = i.id
-     *   WHERE ri.recipe_id = ?
-     *   ORDER BY ri.id ASC
+     * SELECT ri.*, i.name, i.unit, i.allergen_flag
+     * FROM recipe_ingredients ri
+     * JOIN ingredients i ON ri.ingredient_id = i.id
+     * WHERE ri.recipe_id = ?
+     * ORDER BY ri.id ASC
      *
      * After calling this, each RecipeIngredient has its Ingredient object set,
-     * so the GUI can directly call ri.getIngredient().getName() without extra DB calls.
+     * so the GUI can directly call ri.getIngredient().getName() without extra DB
+     * calls.
      *
      * Called by: RecipeService.getIngredientsForRecipe()
-     *            RecipeDetailPanel (to display ingredient list)
-     *            ServingScaler (to get the list to scale)
-     *            CostEstimator (to calculate total cost)
+     * RecipeDetailPanel (to display ingredient list)
+     * ServingScaler (to get the list to scale)
+     * CostEstimator (to calculate total cost)
      *
      */
     public List<RecipeIngredient> getIngredientsByRecipe(int recipeId) {
         List<RecipeIngredient> list = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(SQL_SELECT_INGREDIENTS_BY_RECIPE)) {
+                PreparedStatement ps = conn.prepareStatement(SQL_SELECT_INGREDIENTS_BY_RECIPE)) {
 
             ps.setInt(1, recipeId);
 
@@ -575,7 +571,8 @@ public class RecipeDAO {
         recipe.setPhotoPath(rs.getString("photo_path"));
         recipe.setSteps(rs.getString("steps"));
 
-        // created_at is a TIMESTAMP in PostgreSQL  read as Timestamp → convert to LocalDateTime
+        // created_at is a TIMESTAMP in PostgreSQL read as Timestamp → convert to
+        // LocalDateTime
         Timestamp createdAtTs = rs.getTimestamp("created_at");
         if (createdAtTs != null) {
             recipe.setCreatedAt(createdAtTs.toLocalDateTime());

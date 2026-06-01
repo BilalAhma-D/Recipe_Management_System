@@ -2,7 +2,6 @@ package com.recipe.gui;
 
 import com.recipe.models.Recipe;
 import com.recipe.models.RecipeIngredient;
-import com.recipe.services.CostEstimator;
 import com.recipe.services.RecipeService;
 import com.recipe.services.ServingScaler;
 
@@ -10,7 +9,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
